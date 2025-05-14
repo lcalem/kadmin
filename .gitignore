@@ -1,0 +1,36 @@
+# macOS system files
+.DS_Store
+
+# python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# venv
+venv/
+.env/
+
+# node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# docker
+*.log
+*.pid
+*.sqlite3
+.env
+.env.*
+
+# ide settings
+.vscode/
+.idea/
+
+# build
+dist/
+build/
+
+# OS trash
+.Trashes
