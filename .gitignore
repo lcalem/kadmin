@@ -9,6 +9,7 @@ __pycache__/
 
 # venv
 venv/
+.venv/
 .env/
 
 # node.js
@@ -34,3 +35,7 @@ build/
 
 # OS trash
 .Trashes
+
+backend/data/
+backend/uploads/
+*.env
