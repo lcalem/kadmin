@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Table, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Boolean, Date, Table, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from db import Base
@@ -22,7 +22,10 @@ class Participant(Base):
     __tablename__ = 'participants'
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
+    normalized_name = Column(String)
     ktaname = Column(String)
+    note = Column(String)
+    is_plusone = Column(Boolean)
     picture_file = Column(String)
 
 
@@ -45,3 +48,15 @@ class Speaker(Base):
     name = Column(String)
     ktaname = Column(String)
     labo = Column(String)
+
+
+class Prospect(Base):
+    __tablename__ = "prospects"
+    id = Column(Integer, primary_key=True, index=True)
+
+    name = Column(String)
+    approached = Column(String)
+    response = Column(String)
+    domain = Column(String)
+    suggested_by = Column(String)
+    remarks = Column(Text)

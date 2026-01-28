@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 import datetime
 
@@ -12,5 +12,69 @@ class EventBase(BaseModel):
     notes: Optional[str]
     script_files: Optional[List[str]]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SpeakerBase(BaseModel):
+    id: int
+    name: Optional[str] = None
+    ktaname: Optional[str] = None
+    labo: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ParticipantBase(BaseModel):
+    id: int
+    name: Optional[str] = None
+    normalized_name: Optional[str] = None
+    ktaname: Optional[str] = None
+    note: Optional[str] = None
+    is_plusone: Optional[bool] = None
+    picture_file: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ParticipantCreate(BaseModel):
+    name: str
+    ktaname: Optional[str] = None
+    note: Optional[str] = None
+    is_plusone: bool = False
+
+
+class ParticipantUpdate(BaseModel):
+    name: Optional[str] = None
+    ktaname: Optional[str] = None
+    note: Optional[str] = None
+    is_plusone: Optional[bool] = None
+
+
+class ProspectBase(BaseModel):
+    id: int
+    name: Optional[str] = None
+    approached: Optional[str] = None
+    response: Optional[str] = None
+    domain: Optional[str] = None
+    suggested_by: Optional[str] = None
+    remarks: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProspectCreate(BaseModel):
+    name: str
+    approached: Optional[str] = None
+    response: Optional[str] = None
+    domain: Optional[str] = None
+    suggested_by: Optional[str] = None
+    remarks: Optional[str] = None
+
+
+class ProspectUpdate(BaseModel):
+    name: Optional[str] = None
+    approached: Optional[str] = None
+    response: Optional[str] = None
+    domain: Optional[str] = None
+    suggested_by: Optional[str] = None
+    remarks: Optional[str] = None
