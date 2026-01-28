@@ -3,38 +3,68 @@
 ## General presentation
 This project is a quick db-backend-frontend project for organizing maths conferences. It handles past events, speakers, conference scripts, participants, and prospects for future conferences and their status, so the organizing team can effiently manage potential speakers and the status of making the event actually happen.
 
+### Features
+- Manage past events with speakers and participants
+- Manage prospective future speakers
+- Download past event scripts if any
+
 ## TODO
-[x] seed finished
-[x] get routes backend only
-[x] simple frontend for listing tables
-[x] add/update/delete participant (no photo)
-[x] add/update/delete event with script file management
-[x] seed prospects
-[x] add/update/delete prospects
-[x] photos add participants
-[] original filename for script instead of uuid
-[] drag&drop uploads
-[] photo at participant creation
-[] display full picture on click
-[] Speaker table with all info
-[] Separate Event page with detail, speakers, participants, etc.
-[] frontend beautification
 
-Housekeeping & security
-[] add identification
-[] hardcorded DB URL
-[] clean repo (venv, node modules)
-[] manage passwords and users from envvars not in the docker-compose
-[] input files in data (participants participantes, pictures, etc) should not be in the repo but elsewhere and uploaded by hand once when setting up the server
+- [x] Seed finished
+- [x] Backend GET routes
+- [x] Simple frontend for listing tables
+- [x] Add / update / delete participant (no photo)
+- [x] Add / update / delete event with script file management
+- [x] Seed prospects
+- [x] Add / update / delete prospects
+- [x] Add photos to participants
 
-[] server setup
+- [ ] Store original script filename instead of UUID
+- [ ] Drag & drop uploads
+- [ ] Photo at participant creation
+- [ ] Display full picture on click
+- [ ] Speaker table with all info
+- [ ] Separate Event page with details (speakers, participants, etc.)
+- [ ] Frontend beautification
+
+### Housekeeping & security
+
+- [ ] Add authentication
+- [ ] Remove hardcoded DB URL
+- [ ] Clean repo (venv, node_modules)
+- [ ] Manage passwords/users via env vars (not docker-compose)
+- [ ] Input files (participants, photos, etc.) not in repo; uploaded once at server setup
+
+- [ ] Server setup
 
 ## Howto
 ### Local Testing from scratch
 
-1. `docker compose up --build`
-2. `docker compose exec backend python reset_db.py`
-3. `docker compose exec backend python seed.py`
+Inputs:
+- This repo (git clone)
+- The data folder given as project input (not in the repo):
+data/
+├── descentes/
+│   ├── 01-xxx/
+│   │   ├── info                # text file with event metadata
+│   │   └── script/
+│   │       ├── script-final.pdf
+│   │       └── script-final.tex
+│   └── 02-yyy/
+│       └── ...
+│
+├── photos-trombi/
+│   ├── prenom-nom.jpg
+│   ├── prenom-nom.png
+│   └── ...
+│
+├── orateurs-oratrices-potentiels.csv
+└── participants-participantes.csv
+
+
+1. Build containers : `docker compose up --build`
+2. Reset database if needed : `docker compose exec backend python reset_db.py`
+3. Seed database : `docker compose exec backend python seed.py`
 4. Go to `localhost:8000/api/hello` and/or `localhost:8000/api/db-check` to test the API 
 
 
