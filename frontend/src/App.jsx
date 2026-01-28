@@ -1,21 +1,31 @@
-import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
-function App() {
-  const [message, setMessage] = useState('...')
+import Participants from "./pages/Participants";
+import Speakers from "./pages/Speakers";
+import Events from "./pages/Events";
+import Prospects from "./pages/Prospects";
 
-  useEffect(() => {
-    fetch('/api/hello')
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch((err) => setMessage('Error fetching backend'))
-  }, [])
-
+export default function App() {
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Fullstack Hello World</h1>
-      <p>{message}</p>
-    </div>
-  )
-}
+    <BrowserRouter>
+      <div style={{ padding: 16 }}>
+        <h1>Kadmin</h1>
 
-export default App
+        <nav style={{ marginBottom: 16 }}>
+          <Link to="/participants">Participants</Link>{" | "}
+          <Link to="/speakers">Speakers</Link>{" | "}
+          <Link to="/events">Events</Link>{" | "}
+          <Link to="/prospects">Prospects</Link>
+        </nav>
+
+        <Routes>
+          <Route path="/participants" element={<Participants />} />
+          <Route path="/speakers" element={<Speakers />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/" element={<p>Select a list.</p>} />
+          <Route path="/prospects" element={<Prospects />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
+}
