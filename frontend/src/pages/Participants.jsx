@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
+import "./Participants.css";
 
 export default function Participants() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // create form state
   const [newName, setNewName] = useState("");
   const [newKtaname, setNewKtaname] = useState("");
   const [newNote, setNewNote] = useState("");
   const [newIsPlusone, setNewIsPlusone] = useState(false);
+  const [newPhotoFile, setNewPhotoFile] = useState(null);
 
   // edit state
   const [editingId, setEditingId] = useState(null);
@@ -38,6 +42,14 @@ export default function Participants() {
     loadParticipants();
   }, []);
 
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "Escape") setLightboxUrl(null);
+    }
+    if (lightboxUrl) window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lightboxUrl]);
+
   async function handleCreate(e) {
     e.preventDefault();
     try {
@@ -57,15 +69,21 @@ export default function Participants() {
 
       if (!res.ok) throw new Error(await res.text());
       const created = await res.json();
+      let finalParticipant = created;
+
+      if (newPhotoFile) {
+        finalParticipant = await uploadPhotoFor(created.id, newPhotoFile);
+      }
 
       // update UI
-      setItems((prev) => [created, ...prev]);
+      setItems((prev) => [finalParticipant, ...prev]);
 
       // reset form
       setNewName("");
       setNewKtaname("");
       setNewNote("");
       setNewIsPlusone(false);
+      setNewPhotoFile(null);
     } catch (e) {
       setError(String(e));
     }
@@ -152,6 +170,18 @@ export default function Participants() {
     }
   }
 
+  async function uploadPhotoFor(participantId, file) {
+    const fd = new FormData();
+    fd.append("file", file);
+
+    const res = await fetch(`/api/participants/${participantId}/picture`, {
+      method: "POST",
+      body: fd,
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return await res.json(); // returns updated participant
+  }
+
   return (
     <div style={{ padding: 16 }}>
       <h2>Participants</h2>
@@ -160,66 +190,118 @@ export default function Participants() {
         <p style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{error}</p>
       )}
 
-      <h3>Add participant</h3>
-      <form onSubmit={handleCreate} style={{ marginBottom: 16 }}>
-        <div>
-          <label>
-            Name{" "}
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              required
-            />
-          </label>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+        <button
+          type="button"
+          className="k-btn"
+          onClick={() => setShowAddModal(true)}
+        >
+          + Add participant
+        </button>
+      </div>
+
+      {showAddModal && (
+        <div
+          className="k-modal-backdrop"
+          onClick={() => setShowAddModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="k-modal k-modal--form" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="k-modal-close"
+              onClick={() => setShowAddModal(false)}
+              aria-label="Close"
+              type="button"
+            >
+              ×
+            </button>
+
+            <h3 style={{ marginTop: 0 }}>Add participant</h3>
+
+            <form
+              onSubmit={async (e) => {
+                await handleCreate(e);
+                setShowAddModal(false); // close on success
+              }}
+            >
+              <div className="k-form-row">
+                <label htmlFor="name">Name</label>
+                <input
+                  id="name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="k-form-row">
+                <label htmlFor="pseudo">Pseudo</label>
+                <input
+                  id="pseudo"
+                  value={newKtaname}
+                  onChange={(e) => setNewKtaname(e.target.value)}
+                />
+              </div>
+
+              <div className="k-form-row">
+                <label htmlFor="note">Note</label>
+                <input
+                  id="note"
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                />
+              </div>
+
+              <div className="k-form-row k-form-row--inline">
+                <label className="k-checkbox">
+                  <span>Is +1</span>
+                  <input
+                    type="checkbox"
+                    checked={newIsPlusone}
+                    onChange={(e) => setNewIsPlusone(e.target.checked)}
+                  />
+                  <span className="k-checkmark" />
+                </label>
+              </div>
+
+              <div className="k-form-row">
+                <label>Photo</label>
+
+                <div className="k-filepicker k-filepicker--inline">
+                  <label className="k-btn k-btn--subtle k-filepicker__btn">
+                    Choose file
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="k-filepicker__input"
+                      onChange={(e) => setNewPhotoFile(e.target.files?.[0] || null)}
+                    />
+                  </label>
+
+                  <span className="k-filepicker__name">
+                    {newPhotoFile ? newPhotoFile.name : "Choose an image…"}
+                  </span>
+                </div>
+              </div>
+
+              <button type="submit">Create</button>
+            </form>
+          </div>
         </div>
+      )}
 
-        <div>
-          <label>
-            Pseudo{" "}
-            <input
-              value={newKtaname}
-              onChange={(e) => setNewKtaname(e.target.value)}
-            />
-          </label>
-        </div>
-
-        <div>
-          <label>
-            Note{" "}
-            <input
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-            />
-          </label>
-        </div>
-
-        <div>
-          <label>
-            Is +1{" "}
-            <input
-              type="checkbox"
-              checked={newIsPlusone}
-              onChange={(e) => setNewIsPlusone(e.target.checked)}
-            />
-          </label>
-        </div>
-
-        <button type="submit">Create</button>
-      </form>
-
-      <h3>List</h3>
       {loading ? (
         <p>Loading…</p>
       ) : (
-        <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+        <table className="k-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
+              <th></th> {/* photo column has no header */}
+              <th className="col-name">Name</th>
               <th>Pseudo</th>
               <th>Note</th>
               <th>+1</th>
-              <th>Photo</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -229,11 +311,57 @@ export default function Participants() {
 
               return (
                 <tr key={p.id}>
-                  <td>{p.id}</td>
 
-                  <td>
+                  <td className="k-avatar-cell">
+                    {p.picture_file ? (
+                      <img
+                        className="k-avatar"
+                        src={`/api/participants/${p.id}/picture?v=${encodeURIComponent(p.picture_file)}`}
+                        alt=""
+                        onClick={() =>
+                          setLightboxUrl(
+                            `/api/participants/${p.id}/picture?v=${encodeURIComponent(p.picture_file)}`
+                          )
+                        }
+                      />
+                    ) : (
+                      <div className="k-avatar k-avatar--placeholder" aria-hidden="true" />
+                    )}
+
+                    {isEditing && (
+                      <div className="k-upload">
+                        <div className="k-filepicker">
+                          <label className="k-btn k-btn--subtle k-filepicker__btn">
+                            Choose file
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="k-filepicker__input"
+                              onChange={(e) => setEditPhotoFile(e.target.files?.[0] || null)}
+                            />
+                          </label>
+
+                          <span className="k-filepicker__name">
+                            {editPhotoFile ? editPhotoFile.name : "No file selected"}
+                          </span>
+
+                          <button
+                            type="button"
+                            className="k-btn k-btn--subtle"
+                            onClick={() => uploadPhoto(p.id)}
+                            disabled={!editPhotoFile}
+                          >
+                            Upload
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </td>
+
+                  <td className="col-name">
                     {isEditing ? (
                       <input
+                        className="k-input"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
                       />
@@ -245,6 +373,7 @@ export default function Participants() {
                   <td>
                     {isEditing ? (
                       <input
+                        className="k-input"
                         value={editKtaname}
                         onChange={(e) => setEditKtaname(e.target.value)}
                       />
@@ -256,6 +385,7 @@ export default function Participants() {
                   <td>
                     {isEditing ? (
                       <input
+                        className="k-input k-input-long"
                         value={editNote}
                         onChange={(e) => setEditNote(e.target.value)}
                       />
@@ -266,53 +396,18 @@ export default function Participants() {
 
                   <td style={{ textAlign: "center" }}>
                     {isEditing ? (
-                      <input
-                        type="checkbox"
-                        checked={editIsPlusone}
-                        onChange={(e) => setEditIsPlusone(e.target.checked)}
-                      />
+                      <label className="k-checkbox k-checkbox--compact">
+                        <input
+                          type="checkbox"
+                          checked={editIsPlusone}
+                          onChange={(e) => setEditIsPlusone(e.target.checked)}
+                        />
+                        <span className="k-checkmark" />
+                      </label>
                     ) : p.is_plusone ? (
                       "✓"
                     ) : (
                       ""
-                    )}
-                  </td>
-                
-                  <td> 
-                    {p.picture_file ? (
-                        <img
-                        src={`/api/participants/${p.id}/picture?v=${encodeURIComponent(
-                            p.picture_file
-                        )}`}
-                        alt=""
-                        style={{
-                            width: 48,
-                            height: 48,
-                            objectFit: "cover",
-                            borderRadius: 6,
-                            display: "block",
-                        }}
-                        />
-                    ) : (
-                        "—"
-                    )}
-
-                    {isEditing && (
-                        <div style={{ marginTop: 6 }}>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setEditPhotoFile(e.target.files?.[0] || null)}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => uploadPhoto(p.id)}
-                            disabled={!editPhotoFile}
-                            style={{ marginLeft: 8 }}
-                        >
-                            Upload
-                        </button>
-                        </div>
                     )}
                   </td>
                   
@@ -335,6 +430,28 @@ export default function Participants() {
           </tbody>
         </table>
       )}
+
+      {lightboxUrl && (
+      <div
+        className="k-modal-backdrop"
+        onClick={() => setLightboxUrl(null)}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="k-modal" onClick={(e) => e.stopPropagation()}>
+          <button
+            className="k-modal-close"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="Close"
+            type="button"
+          >
+            ×
+          </button>
+          <img className="k-modal-img" src={lightboxUrl} alt="Participant photo" />
+        </div>
+      </div>
+    )}
+
     </div>
   );
 }

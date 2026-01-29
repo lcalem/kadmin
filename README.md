@@ -29,10 +29,14 @@ This project is a quick db-backend-frontend project for organizing maths confere
 Frontend beautification:
 - [x] Select color background and font
 - [x] Make a start page where we can select one of the 4 pages
-- [ ] Make a prettier table for the Participants, still with the ability to edit stuff and add new people
+- [x] Make a prettier table for the Participants, still with the ability to edit stuff and add new people
+- [x] Beautify add form
+- [x] Beautify edit form
+- [x] Ability to upload a picture from the add form
+- [ ] Beautify form button and Edit/delete buttons
 - [ ] Make a prettier Speakers page where each speaker is a bubble and the title is the name, pseudonym and laboratory expand when hovering?
 - [ ] Make a prettier Events page where each event is a bubble with a picture
-- [ ] On click, each even is a separate page with more information, prettier download buttons for the script files, upload button for the script file, edit button
+- [ ] On click, each event is a separate page with more information, prettier download buttons for the script files, upload button for the script file, edit button
 - [ ] Simple but themed prospects table where all the information is visible at once
 - [ ] static image background when I have it 
 

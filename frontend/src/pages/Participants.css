@@ -1,0 +1,412 @@
+/* Participants table: dark, minimal, editable */
+
+.k-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  overflow: hidden; /* makes radius work with thead */
+}
+
+.k-table thead th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.k-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+}
+
+.k-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.k-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Avatar column */
+.k-avatar-cell {
+  width: 70px;
+}
+
+.k-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px; /* perfect circle */
+  object-fit: cover;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  filter: brightness(0.95) contrast(1.05);
+}
+
+.k-avatar--placeholder {
+  background: rgba(255, 255, 255, 0.06);
+  position: relative;
+}
+
+.k-avatar--placeholder::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 255, 255, 0.20);
+}
+
+/* Upload row controls (only visible in edit mode)  */
+.k-upload {
+  margin-top: 8px;
+}
+
+.k-upload__input {
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 220px;
+}
+
+/* buttons for table actions */
+.k-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.k-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.k-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.k-btn--subtle {
+  background: transparent;
+}
+
+.col-name {
+  font-size: 1rem;
+  line-height: 1.4;
+  min-width: 260px;
+}
+
+.k-avatar {
+  cursor: pointer;
+}
+
+/* Modal backdrop */
+.k-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 9999;
+}
+
+/* Modal box */
+.k-modal {
+  position: relative;
+  max-width: min(720px, 92vw);
+  max-height: 92vh;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(10, 10, 10, 0.9);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Big image */
+.k-modal-img {
+  display: block;
+  max-width: 100%;
+  max-height: 92vh;
+  object-fit: contain;
+}
+
+/* Close button */
+.k-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.k-modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.k-modal--form {
+  padding: 18px 18px 14px;
+  width: min(520px, 92vw);
+}
+
+/* ---------- Forms ---------- */
+
+.k-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.k-form-row label {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.k-form-row input[type="text"],
+.k-form-row input[type="file"],
+.k-form-row input:not([type]) {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.k-form-row input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Inline row (checkbox) */
+.k-form-row--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---------- Custom checkbox ---------- */
+
+.k-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text);
+  user-select: none;
+}
+
+/* Hide the native checkbox */
+.k-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Visual checkbox */
+.k-checkmark {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px; /* rounded, not square */
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+/* Check indicator */
+.k-checkmark::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--text);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* Checked state */
+.k-checkbox input:checked + .k-checkmark::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Hover / focus */
+.k-checkbox:hover .k-checkmark {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Reusable input style (used in forms and inline table edit) */
+.k-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+.k-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.k-table .k-input {
+  font-size: 0.92rem;
+  padding: 6px 8px;
+  width: 200px;
+}
+
+.k-table .k-input-long {
+  width: 400px;
+}
+
+.k-checkbox--compact {
+  gap: 0;
+}
+
+.k-checkbox--compact span:first-child {
+  display: none;
+}
+
+.k-table .k-checkbox--compact .k-checkmark {
+  width: 16px;
+  height: 16px;
+  border-radius: 6px;
+}
+
+.k-table .k-checkbox--compact .k-checkmark::after {
+  width: 7px;
+  height: 7px;
+}
+
+.k-file {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Custom file picker */
+/*.k-filepicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}*/
+/*.k-filepicker {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}*/
+.k-filepicker {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 8px 10px;
+  align-items: center;
+}
+
+.k-filepicker__btn {
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* real input hidden but kept clickable via the label */
+.k-filepicker__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  font-size: 100px; /* makes the clickable area reliable on some browsers */
+}
+
+/*.k-filepicker__name {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}*/
+
+/*.k-filepicker__name {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}*/
+
+.k-filepicker__name {
+  grid-column: 1 / -1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+}
+
+.k-filepicker__btn,
+.k-filepicker .k-btn {
+  min-width: 150px;
+}
+
+/* Inline file picker (used in add participant form) */
+.k-filepicker--inline {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.k-filepicker--inline .k-filepicker__name {
+  grid-column: auto;
+  max-width: none;
+}
