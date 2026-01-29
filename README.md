@@ -25,15 +25,24 @@ This project is a quick db-backend-frontend project for organizing maths confere
 - [ ] Display full picture on click
 - [ ] Speaker table with all info
 - [ ] Separate Event page with details (speakers, participants, etc.)
-- [ ] Frontend beautification
+
+Frontend beautification:
+- [x] Select color background and font
+- [x] Make a start page where we can select one of the 4 pages
+- [ ] Make a prettier table for the Participants, still with the ability to edit stuff and add new people
+- [ ] Make a prettier Speakers page where each speaker is a bubble and the title is the name, pseudonym and laboratory expand when hovering?
+- [ ] Make a prettier Events page where each event is a bubble with a picture
+- [ ] On click, each even is a separate page with more information, prettier download buttons for the script files, upload button for the script file, edit button
+- [ ] Simple but themed prospects table where all the information is visible at once
+- [ ] static image background when I have it 
 
 ### Housekeeping & security
 
 - [ ] Add authentication
 - [ ] Remove hardcoded DB URL
-- [ ] Clean repo (venv, node_modules)
+- [x] Clean repo (venv, node_modules)
 - [ ] Manage passwords/users via env vars (not docker-compose)
-- [ ] Input files (participants, photos, etc.) not in repo; uploaded once at server setup
+- [x] Input files (participants, photos, etc.) not in repo; uploaded once at server setup
 
 - [ ] Server setup
 
@@ -43,6 +52,7 @@ This project is a quick db-backend-frontend project for organizing maths confere
 Inputs:
 - This repo (git clone)
 - The data folder given as project input (not in the repo):
+```text
 data/
 ├── descentes/
 │   ├── 01-xxx/
@@ -60,17 +70,13 @@ data/
 │
 ├── orateurs-oratrices-potentiels.csv
 └── participants-participantes.csv
-
+```
 
 1. Build containers : `docker compose up --build`
 2. Reset database if needed : `docker compose exec backend python reset_db.py`
 3. Seed database : `docker compose exec backend python seed.py`
 4. Go to `localhost:8000/api/hello` and/or `localhost:8000/api/db-check` to test the API 
 
-
-### To sort
-- uvicorn is run via docker-compose command
-- vite dev server will run via docker-compose
 
 ## Tech stack
 

@@ -1,0 +1,159 @@
+:root {
+  --font-serif: "Libre Baskerville", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --bg: #121212;
+  --text: #eaeaea;
+  --muted: #b8b8b8;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  line-height: 1.6;
+}
+
+/* Make form/table UI readable */
+input, button, select, textarea {
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+}
+
+a {
+  color: var(--text);
+}
+
+small, .muted {
+  color: var(--muted);
+}
+
+table {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2.2rem;
+}
+
+h2 {
+  font-size: 1.6rem;
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+
+/* ---------- HOME LAYOUT ---------- */
+
+.home {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bubble-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 200px);
+  gap: 64px;
+}
+
+/* ---------- BUBBLE ---------- */
+
+.nav-bubble {
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.bubble-image {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  filter: brightness(0.7) contrast(0.95);
+  transition: filter 0.35s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.site-title {
+  margin: 16px;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.site-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-title a:hover {
+  opacity: 0.85;
+}
+
+/* ---------- TITLE ---------- */
+
+.bubble-title {
+  margin-top: 16px;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;          /* slightly smaller for all caps */
+  letter-spacing: 0.12em;      /* important for readability */
+  text-transform: uppercase;
+  color: var(--muted);
+  position: relative;
+  display: inline-block;
+  padding-bottom: 4px;
+  transition: color 0.35s ease;
+}
+
+/* animated underline */
+.bubble-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+
+/* ---------- HOVER / FOCUS ---------- */
+
+.nav-bubble:hover .bubble-image,
+.nav-bubble:focus-visible .bubble-image {
+  filter: brightness(0.95) contrast(1.05);
+}
+
+.nav-bubble:hover .bubble-title,
+.nav-bubble:focus-visible .bubble-title {
+  color: var(--text);
+}
+
+.nav-bubble:hover .bubble-title::after,
+.nav-bubble:focus-visible .bubble-title::after {
+  transform: scaleX(1);
+}
