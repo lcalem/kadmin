@@ -15,6 +15,8 @@ from db import SessionLocal
 from models import Event, Speaker, Participant, Prospect
 from schemas import EventBase, SpeakerBase, ParticipantBase, ParticipantCreate, ParticipantUpdate, ProspectBase, ProspectCreate, ProspectUpdate
 
+from utils import normalize_name
+
 
 app = FastAPI()
 UPLOAD_DIR = Path("uploads")
@@ -22,6 +24,8 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 PHOTO_DIR = Path("data") / "photos-trombi"
 PHOTO_DIR.mkdir(parents=True, exist_ok=True)
+SPEAKER_PHOTO_DIR = Path("data") / "photos-speakers"
+SPEAKER_PHOTO_DIR.mkdir(exist_ok=True)
 ALLOWED_PHOTO_EXTS = {".jpg", ".jpeg", ".png"}
 
 # vite
@@ -191,9 +195,95 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
 
 
 # ------- SPEAKERS ROUTES -------
-@app.get("/api/speakers", response_model=List[SpeakerBase])
+@app.get("/api/speakers", response_model=list[SpeakerBase])
 def get_speakers(db: Session = Depends(get_db)):
-    return db.query(Speaker).all()
+    def last_name_key(name: str | None):
+        if not name:
+            return ""
+        return name.strip().split()[-1].lower()
+
+    speakers = db.query(Speaker).all()
+    speakers.sort(key=lambda s: last_name_key(s.name))
+
+    out = []
+    for s in speakers:
+        events = (
+            db.query(Event)
+              .filter(Event.speaker.any(Speaker.id == s.id))
+              .all()
+        )
+        event_numbers = sorted([e.number for e in events if e.number is not None])
+
+        out.append({
+            "id": s.id,
+            "name": s.name,
+            "ktaname": s.ktaname,
+            "labo": s.labo,
+            "picture_file": s.picture_file,
+            "event_numbers": event_numbers,
+        })
+    return out
+
+
+@app.get("/api/speaker/{speaker_id}/picture")
+def get_speaker_picture(speaker_id: int, db: Session = Depends(get_db)):
+    s = db.query(Speaker).filter(Speaker.id == speaker_id).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Speaker not found")
+
+    if not s.picture_file:
+        raise HTTPException(status_code=404, detail="No picture for speaker")
+
+    path = SPEAKER_PHOTO_DIR / s.picture_file
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Picture file missing on disk")
+
+    return FileResponse(path=str(path))
+
+
+@app.post("/api/speaker/{speaker_id}/picture", response_model=SpeakerBase)
+async def upload_speaker_picture(
+    speaker_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    s = db.query(Speaker).filter(Speaker.id == speaker_id).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="Speaker not found")
+
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_PHOTO_EXTS:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    # delete old file if present
+    if s.picture_file:
+        old_path = SPEAKER_PHOTO_DIR / s.picture_file
+        if old_path.exists():
+            old_path.unlink()
+
+    slug = normalize_name(s.name or "")
+    filename = f"{slug}{ext}"
+    stored_path = SPEAKER_PHOTO_DIR / filename
+
+    with stored_path.open("wb") as f:
+        while chunk := await file.read(1024 * 1024):
+            f.write(chunk)
+
+    s.picture_file = filename
+    db.commit()
+    db.refresh(s)
+
+    events = db.query(Event).filter(Event.speaker.any(Speaker.id == s.id)).all()
+    event_numbers = sorted([e.number for e in events if e.number is not None])
+
+    return {
+    "id": s.id,
+    "name": s.name,
+    "ktaname": s.ktaname,
+    "labo": s.labo,
+    "picture_file": s.picture_file,
+    "event_numbers": event_numbers,
+    }
 
 
 # ------- PARTICIPANTS ROUTES -------

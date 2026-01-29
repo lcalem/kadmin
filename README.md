@@ -33,12 +33,16 @@ Frontend beautification:
 - [x] Beautify add form
 - [x] Beautify edit form
 - [x] Ability to upload a picture from the add form
-- [ ] Beautify form button and Edit/delete buttons
-- [ ] Make a prettier Speakers page where each speaker is a bubble and the title is the name, pseudonym and laboratory expand when hovering?
+- [x] Make a prettier Speakers page where each speaker is a bubble and the title is the name, pseudonym and laboratory expand when hovering?
+- [x] update picture to speakers
+- [x] seed with all the pictures.
+- [x] Uploaded pictures should maybe go in the data with a name that's parsable by the seed.py instead of a uuid so the data folder is movable as-is to a new server
 - [ ] Make a prettier Events page where each event is a bubble with a picture
 - [ ] On click, each event is a separate page with more information, prettier download buttons for the script files, upload button for the script file, edit button
+- [ ] Add Event that also creates a speaker, with a picture
 - [ ] Simple but themed prospects table where all the information is visible at once
 - [ ] static image background when I have it 
+- [ ] sort speakers and participants by name, events by number
 
 ### Housekeeping & security
 
@@ -49,6 +53,13 @@ Frontend beautification:
 - [x] Input files (participants, photos, etc.) not in repo; uploaded once at server setup
 
 - [ ] Server setup
+
+### Low prio
+- [ ] The sorting of speakers by last name with a single name field is good for now but brittle: split speaker name into first_name and last_name would be better
+- [ ] Title centering on Speakers/Events pages?
+- [ ] Beautify form button and Edit/delete buttons
+- [ ] In order to merge the two build photo index functions in seed.py, we should switch to all normalized names first-name_last-name for photos _on disk_ first by sweeping the photos-trombi at the beginning of seed.py. Then we can treat photo names as normalized correctly afterwards
+
 
 ## Howto
 ### Local Testing from scratch

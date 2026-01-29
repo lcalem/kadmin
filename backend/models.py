@@ -48,6 +48,7 @@ class Speaker(Base):
     name = Column(String)
     ktaname = Column(String)
     labo = Column(String)
+    picture_file = Column(String)
 
 
 class Prospect(Base):

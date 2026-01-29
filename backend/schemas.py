@@ -20,6 +20,9 @@ class SpeakerBase(BaseModel):
     name: Optional[str] = None
     ktaname: Optional[str] = None
     labo: Optional[str] = None
+    picture_file: Optional[str] = None
+    
+    event_numbers: List[int] = []
 
     model_config = ConfigDict(from_attributes=True)
 

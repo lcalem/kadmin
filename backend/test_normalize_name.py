@@ -1,4 +1,4 @@
-from seed import normalize_name
+from utils import normalize_name
 
 assert normalize_name('Lucas Roger-Loir', origin="freeform") == "lucas_roger-loir"
 assert normalize_name('Lucie Durand', origin="freeform") == "lucie_durand"

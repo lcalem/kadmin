@@ -2,26 +2,27 @@ import csv
 import datetime
 import os
 import re
-import unicodedata
 from pathlib import Path
-from typing import Literal
 
 from db import SessionLocal, engine, Base
 from models import Event, Participant, Speaker, Prospect
 from sqlalchemy.exc import IntegrityError
+
+from utils import normalize_name
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 EVENTS_DIR = DATA_DIR / "descentes"
 PARTICIPANTS_CSV = DATA_DIR / "participants-participantes.csv"
 PHOTO_DIR = DATA_DIR / "photos-trombi"
+SPEAKER_PHOTO_DIR = DATA_DIR / "photos-speakers"
 PROSPECTS_CSV = DATA_DIR / "orateurs-oratrices-potentiels.csv"
-
-NameOrigin = Literal["freeform", "filename"]
 
 
 # Part 1 : read base data to create events first, gather speaker data
 def create_speakers_and_events(db):
+    speaker_photo_index = build_speaker_photo_index(SPEAKER_PHOTO_DIR)
+
     try:
         for name in os.listdir(EVENTS_DIR):
             full_path = os.path.join(EVENTS_DIR, name)
@@ -72,9 +73,16 @@ def create_speakers_and_events(db):
                     # pprint(info)
 
                     # create speaker
-                    speaker = Speaker(name=info['Orateur'], 
-                                      ktaname=info['Pseudo'], 
-                                      labo=info['Labo'])
+                    speaker_name = info["Orateur"].strip()
+                    speaker_slug = normalize_name(speaker_name, origin="freeform")
+                    speaker_photo_path = speaker_photo_index.get(speaker_slug)
+
+                    speaker = Speaker(
+                        name=speaker_name,
+                        ktaname=info["Pseudo"],
+                        labo=info["Labo"],
+                        picture_file=(speaker_photo_path.name if speaker_photo_path else None),
+                    )
                     db.add(speaker)
                     db.commit()
 
@@ -97,42 +105,6 @@ def create_speakers_and_events(db):
         print("maybe duplicate detected")
 
 
-def normalize_name(name: str, origin: NameOrigin = "freeform") -> str:
-    """
-    Normalizes names to firstname_lastname for photo matching.
-    Émilie du Châtelet -> emilie_du-chatelet
-    Antoine Chambert-Loir -> antoine_chambert-loir
-    Haëtham Al Aswad -> haetham_al-aswad
-
-    Freeform origin is name written humanly
-    Filename origin is photo names with - and _ swapped
-    """
-    name = name.strip().lower()
-
-    # strip accents
-    name = unicodedata.normalize("NFKD", name)
-    name = "".join(c for c in name if not unicodedata.combining(c))
-
-    if origin == "freeform":
-        # parts (treat space, -, _ as separator)
-        name = re.sub(r"[_]", " ", name)
-        parts = re.split(r"\s+", name)
-        if len(parts) == 1:
-            return parts[0]
-
-        first = parts[0]
-        last = "-".join(parts[1:])
-
-        return f"{first}_{last}"
-    
-    if origin == "filename":
-        # split by -
-        first, last = name.split('-', 1)
-        first = first.replace("_", "-")
-        last = last.replace("_", "-")
-        return f"{first}_{last}"
-
-
 def build_photo_index(photo_dir: Path) -> dict[str, Path]:
     """
     Returns map from normalized name (firstname-lastname) to filepath
@@ -146,6 +118,19 @@ def build_photo_index(photo_dir: Path) -> dict[str, Path]:
             continue
         photo_index[normalize_name(p.stem, origin="filename")] = p
     return photo_index
+
+
+def build_speaker_photo_index(photo_dir: Path) -> dict[str, Path]:
+    """
+    original name normalization from data is the opposite of what we want...
+    """
+    idx: dict[str, Path] = {}
+    if not photo_dir.exists():
+        return idx
+    for p in photo_dir.iterdir():
+        if p.is_file() and p.suffix.lower() in {".jpg", ".jpeg", ".png"}:
+            idx[p.stem] = p  # stem is already normalize_name(speaker.name)
+    return idx
 
 
 # Part 2: add participants - retro add participants to previously created events
