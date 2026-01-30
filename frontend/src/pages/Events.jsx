@@ -37,11 +37,18 @@ export default function Events() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
 
-  // create form state (kept as-is for now)
+  // create form state 
   const [number, setNumber] = useState("");
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
+  const [storyUpload, setStoryUpload] = useState(null);
+  const [notesUpload, setNotesUpload] = useState(null);
   const [scriptFile, setScriptFile] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [speakerName, setSpeakerName] = useState("");
+  const [speakerKtaname, setSpeakerKtaname] = useState("");
+  const [speakerLabo, setSpeakerLabo] = useState("");
+  const [speakerPhotoFile, setSpeakerPhotoFile] = useState(null);
 
   // modal + edit state
   const [selected, setSelected] = useState(null); // selected event object
@@ -65,6 +72,14 @@ export default function Events() {
     }
   }
 
+  function closeAddModal() {
+    setShowAddModal(false);
+    setNumber("");
+    setTitle("");
+    setDate("");
+    setScriptFile(null);
+  }
+
   useEffect(() => {
     loadEvents();
   }, []);
@@ -78,6 +93,7 @@ export default function Events() {
         setEditScriptFile(null);
         setIsEditingCover(false);
         setCoverFile(null);
+        closeAddModal();
       }
     }
     if (selected) window.addEventListener("keydown", onKeyDown);
@@ -120,10 +136,19 @@ export default function Events() {
       setError("");
 
       const fd = new FormData();
+      // event data
       fd.append("number", number);
       fd.append("title", title);
       fd.append("date", date);
+      if (storyUpload) fd.append("story_file", storyUpload);
+      if (notesUpload) fd.append("notes_file", notesUpload);
       if (scriptFile) fd.append("script", scriptFile);
+
+      // speaker data
+      fd.append("speaker_name", speakerName);
+      fd.append("speaker_ktaname", speakerKtaname);
+      fd.append("speaker_labo", speakerLabo);
+      if (speakerPhotoFile) fd.append("speaker_picture", speakerPhotoFile);
 
       const res = await fetch("/api/events", { method: "POST", body: fd });
       if (!res.ok) throw new Error(await res.text());
@@ -135,6 +160,10 @@ export default function Events() {
       setTitle("");
       setDate("");
       setScriptFile(null);
+      setSpeakerName("");
+      setSpeakerKtaname("");
+      setSpeakerLabo("");
+      setSpeakerPhotoFile(null);
       const inp = document.getElementById("create-script-input");
       if (inp) inp.value = "";
     } catch (e) {
@@ -204,49 +233,202 @@ export default function Events() {
       <h2>Events</h2>
       {error && <p style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{error}</p>}
 
-      <h3>Add event</h3>
-      <form onSubmit={handleCreate} style={{ marginBottom: 20 }}>
-        <div>
-          <label>
-            Number{" "}
-            <input
-              type="number"
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
-              required
-            />
-          </label>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+        <button type="button" className="k-btn k-btn--subtle" onClick={() => setShowAddModal(true)}>
+          + Nouvelle Descente
+        </button>
+      </div>
+
+      {showAddModal && (
+        <div
+          className="event-modal-backdrop"
+          onClick={closeAddModal}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="event-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="event-modal-close"
+              type="button"
+              onClick={closeAddModal}
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            <div className="event-modal-body">
+              <h3 className="event-modal-title">Nouvelle Descente</h3>
+
+              <div className="k-edit-form">
+                <div className="k-form-section">
+                  <div className="k-form-section-title">Descente</div>
+                </div>
+                <div className="k-form-row">
+                  <label htmlFor="create-number">Numéro</label>
+                  <input
+                    id="create-number"
+                    className="k-input"
+                    type="number"
+                    value={number}
+                    onChange={(e) => setNumber(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="create-title">Titre</label>
+                  <input
+                    id="create-title"
+                    className="k-input"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="create-date">Date</label>
+                  <input
+                    id="create-date"
+                    className="k-input"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label>Récit (optionnel)</label>
+                  <div className="k-filepicker k-filepicker--inline">
+                    <label className="k-btn k-btn--subtle k-filepicker__btn">
+                      Choose file
+                      <input
+                        type="file"
+                        accept=".md,.txt"
+                        className="k-filepicker__input"
+                        onChange={(e) => setStoryUpload(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <span className="k-filepicker__name">
+                      {storyUpload ? storyUpload.name : "No file selected"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="k-form-row">
+                  <label>Notes (optionnelles)</label>
+                  <div className="k-filepicker k-filepicker--inline">
+                    <label className="k-btn k-btn--subtle k-filepicker__btn">
+                      Choose file
+                      <input
+                        type="file"
+                        accept=".md,.txt"
+                        className="k-filepicker__input"
+                        onChange={(e) => setNotesUpload(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <span className="k-filepicker__name">
+                      {notesUpload ? notesUpload.name : "No file selected"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="k-form-row">
+                  <label>Script (optionnel)</label>
+
+                  <div className="k-filepicker k-filepicker--inline">
+                    <label className="k-btn k-btn--subtle k-filepicker__btn">
+                      Choose file
+                      <input
+                        type="file"
+                        className="k-filepicker__input"
+                        onChange={(e) => setScriptFile(e.target.files?.[0] || null)}
+                      />
+                    </label>
+
+                    <span className="k-filepicker__name">
+                      {scriptFile ? scriptFile.name : "No file selected"}
+                    </span>
+                  </div>
+                </div>
+
+                <hr className="k-form-divider" />
+
+                <div className="k-form-section">
+                  <div className="k-form-section-title">Orateur / Oratrice</div>
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="create-speaker-name">Nom</label>
+                  <input
+                    id="create-speaker-name"
+                    className="k-input"
+                    value={speakerName}
+                    onChange={(e) => setSpeakerName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="create-speaker-ktaname">Pseudo (optionnel)</label>
+                  <input
+                    id="create-speaker-ktaname"
+                    className="k-input"
+                    value={speakerKtaname}
+                    onChange={(e) => setSpeakerKtaname(e.target.value)}
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="create-speaker-labo">Labo (optionnel)</label>
+                  <input
+                    id="create-speaker-labo"
+                    className="k-input"
+                    value={speakerLabo}
+                    onChange={(e) => setSpeakerLabo(e.target.value)}
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label>Photo (optionnelle)</label>
+
+                  <div className="k-filepicker k-filepicker--inline">
+                    <label className="k-btn k-btn--subtle k-filepicker__btn">
+                      Choose file
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="k-filepicker__input"
+                        onChange={(e) => setSpeakerPhotoFile(e.target.files?.[0] || null)}
+                      />
+                    </label>
+
+                    <span className="k-filepicker__name">
+                      {speakerPhotoFile ? speakerPhotoFile.name : "No file selected"}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="k-btn"
+                  onClick={() => {
+                    // call handleCreate with a fake event
+                    const fakeEvent = { preventDefault: () => {} };
+                    handleCreate(fakeEvent)
+                      .then(() => closeAddModal())
+                      .catch((e) => setError(String(e)));
+                  }}
+                >
+                  Create
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+      )}
 
-        <div>
-          <label>
-            Title{" "}
-            <input value={title} onChange={(e) => setTitle(e.target.value)} required />
-          </label>
-        </div>
-
-        <div>
-          <label>
-            Date{" "}
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-          </label>
-        </div>
-
-        <div>
-          <label>
-            Script{" "}
-            <input
-              id="create-script-input"
-              type="file"
-              onChange={(e) => setScriptFile(e.target.files?.[0] || null)}
-            />
-          </label>
-        </div>
-
-        <button type="submit">Create</button>
-      </form>
-
-      <h3>Browse</h3>
       <div className="event-grid">
         {items.map((ev) => (
           <button key={ev.id} className="event-bubble" type="button" onClick={() => openModal(ev)}>

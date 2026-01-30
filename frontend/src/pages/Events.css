@@ -318,3 +318,21 @@
   padding: 6px 8px;
   width: 200px;
 }
+
+.event-modal.event-modal--narrow {
+  width: min(720px, 94vw);
+}
+
+.k-form-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin: 12px 0;
+}
+
+.k-form-section-title {
+  font-family: var(--font-sans);
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}

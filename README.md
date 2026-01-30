@@ -35,11 +35,12 @@ Frontend beautification:
 - [x] Prettier edit form
 - [x] Seeding of photos previously uploaded
 - [x] "nuit du" instead of juste la date
-- [ ] prettify Add Event in its own modal, that also creates a speaker, with a picture
-
+- [x] prettify Add Event in its own modal, that also creates a speaker, with a picture
+- [ ] Display events for participants, display participants for event
+- [ ] Add participants UX during event creation
 - [ ] Simple but themed prospects table where all the information is visible at once
 - [ ] Add prospect should have its own button + modal
-- [ ] sort speakers and participants by name, events by number
+- [ ] sort speakers and participants by name, (done) events by number
 
 ### Housekeeping & security
 
@@ -60,6 +61,8 @@ Frontend beautification:
 - [ ] switch back speaker routes to speakers plural for consistency
 - [ ] display latex in story
 - [ ] display and download all script files
+- [ ] add possibility of creating a new event by uploading a standardized .zip with all the info following a documented format, to avoid having to spend time clicking on the interface
+- [ ] downloadable story and notes in markdown for easier editing later
 
 ## Howto
 ### Local Testing from scratch

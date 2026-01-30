@@ -48,6 +48,11 @@ def get_db():
         db.close()
 
 
+async def read_text_upload(upload: UploadFile) -> str:
+    data = await upload.read()
+    return data.decode("utf-8", errors="replace")
+
+
 # ------- SANITY CHECKS -------
 @app.get("/api/db-check")
 def db_check(db: Session = Depends(get_db)):
@@ -71,13 +76,28 @@ async def create_event(
     number: int = Form(...),
     title: str = Form(...),
     date: str = Form(...),  # "YYYY-MM-DD"
+    story_file: UploadFile | None = File(None),
+    notes_file: UploadFile | None = File(None),
     script: UploadFile | None = File(None),
+
+    speaker_name: str = Form(...),
+    speaker_ktaname: str | None = Form(None),
+    speaker_labo: str | None = Form(None),
+    speaker_picture: UploadFile | None = File(None),
+
     db: Session = Depends(get_db),
 ):
     # basic uniqueness check
     if db.query(Event).filter(Event.number == number).first():
         raise HTTPException(status_code=400, detail="Event number already exists")
 
+    # parse date safely
+    try:
+        parsed_date = datetime.date.fromisoformat(date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date (expected YYYY-MM-DD)")
+
+    # Script file
     stored_files = None
     if script is not None:
         suffix = Path(script.filename).suffix.lower()  # keep extension
@@ -90,19 +110,48 @@ async def create_event(
 
         stored_files = [stored_name]  # store internal file name(s)
 
-    # parse date safely
-    try:
-        parsed_date = datetime.date.fromisoformat(date)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date (expected YYYY-MM-DD)")
+    # Notes / Story files
+    story_text = None
+    if story_file is not None:
+        story_text = await read_text_upload(story_file)
+
+    notes_text = None
+    if notes_file is not None:
+        notes_text = await read_text_upload(notes_file)
+
+    # Speaker creation
+    speaker = Speaker(
+        name=speaker_name.strip(),
+        ktaname=(speaker_ktaname.strip() if speaker_ktaname else None),
+        labo=(speaker_labo.strip() if speaker_labo else None),
+        picture_file=None,
+    )
+    if speaker_picture is not None:
+        ext = Path(speaker_picture.filename).suffix.lower()
+        if ext not in ALLOWED_PHOTO_EXTS:
+            raise HTTPException(status_code=400, detail="Unsupported speaker picture type")
+
+        slug = normalize_name(speaker.name or "")
+        filename = f"{slug}{ext}"
+        stored_path = SPEAKER_PHOTO_DIR / filename
+
+        with stored_path.open("wb") as f:
+            while chunk := await speaker_picture.read(1024 * 1024):
+                f.write(chunk)
+
+        speaker.picture_file = filename
+
+    db.add(speaker)
+    db.flush()
 
     ev = Event(
         number=number,
         title=title,
         date=parsed_date,
-        story=None,
-        notes=None,
+        story=story_text,
+        notes=notes_text,
         script_files=stored_files,
+        speaker=[speaker]
     )
     db.add(ev)
     db.commit()
@@ -133,6 +182,8 @@ async def update_event(
     number: int = Form(...),
     title: str = Form(...),
     date: str = Form(...),  # YYYY-MM-DD
+    story_file: UploadFile | None = File(None),
+    notes_file: UploadFile | None = File(None),
     script: UploadFile | None = File(None),
     db: Session = Depends(get_db),
 ):
@@ -154,6 +205,13 @@ async def update_event(
     ev.number = number
     ev.title = title
     ev.date = parsed_date
+
+    # story and notes text
+    if story_file is not None:
+        ev.story = (await read_text_upload(story_file))
+
+    if notes_file is not None:
+        ev.notes = (await read_text_upload(notes_file))
 
     # optional: replace script (delete old)
     if script is not None:
