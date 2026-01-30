@@ -1,6 +1,33 @@
 import { useEffect, useState } from "react";
 import "./Events.css";
 
+function formatNight(dateStr) {
+  if (!dateStr) return "";
+
+  // dateStr is "YYYY-MM-DD"
+  const [y, m, d] = dateStr.split("-").map(Number);
+
+  // Use UTC to avoid timezone shifting the day
+  const start = new Date(Date.UTC(y, m - 1, d));
+  const end = new Date(Date.UTC(y, m - 1, d + 1)); // handles month boundaries automatically
+
+  const months = [
+    "janvier", "février", "mars", "avril", "mai", "juin",
+    "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+  ];
+
+  const dd1 = String(start.getUTCDate()).padStart(2, "0");
+  const mm1 = months[start.getUTCMonth()];
+  const dd2 = String(end.getUTCDate()).padStart(2, "0");
+  const mm2 = months[end.getUTCMonth()];
+  const yyyy = start.getUTCFullYear(); // same year by your assumption
+
+  if (mm1 === mm2) {
+    return `Dans la nuit du ${dd1} au ${dd2} ${mm1} ${yyyy}`;
+  }
+  return `Dans la nuit du ${dd1} ${mm1} au ${dd2} ${mm2} ${yyyy}`;
+}
+
 function eventCoverUrl(ev) {
   if (!ev?.cover_photo) return null;
   return `/api/events/${ev.id}/cover?v=${encodeURIComponent(ev.cover_photo)}`;
@@ -238,8 +265,7 @@ export default function Events() {
               <h3 className="event-modal-title">
                 #{selected.number} — {selected.title}
               </h3>
-              <div className="event-modal-subtitle">{selected.date}</div>
-
+              <div className="event-modal-subtitle">{formatNight(selected.date)}</div>
               <div className="event-modal-cover">
                 {eventCoverUrl(selected) ? (
                   <img src={eventCoverUrl(selected)} alt={selected.title || `Event ${selected.number}`} />
