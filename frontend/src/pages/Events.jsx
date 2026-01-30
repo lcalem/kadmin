@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./Events.css";
 
 function formatNight(dateStr) {
@@ -52,6 +52,7 @@ export default function Events() {
   const [editScriptFile, setEditScriptFile] = useState(null);
   const [isEditingCover, setIsEditingCover] = useState(false);
   const [coverFile, setCoverFile] = useState(null);
+  const editFormRef = useRef(null);
 
   async function loadEvents() {
     try {
@@ -82,6 +83,15 @@ export default function Events() {
     if (selected) window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selected]);
+
+  useEffect(() => {
+    if (isEditing && editFormRef.current) {
+      editFormRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [isEditing]);
 
   async function uploadCover() {
     if (!selected || !coverFile) return;
@@ -374,27 +384,66 @@ export default function Events() {
               </div>
 
               {isEditing && (
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 14 }}>
+                <div
+                  ref={editFormRef}
+                  style={{
+                    borderTop: "1px solid rgba(255,255,255,0.12)",
+                    paddingTop: 14,
+                  }}
+                >
                   <h4 style={{ marginTop: 0 }}>Edit event</h4>
 
-                  <div style={{ display: "grid", gap: 10 }}>
-                    <label>
-                      Number{" "}
-                      <input type="number" value={editNumber} onChange={(e) => setEditNumber(e.target.value)} />
-                    </label>
-                    <label>
-                      Title{" "}
-                      <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-                    </label>
-                    <label>
-                      Date{" "}
-                      <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} />
-                    </label>
+                  <div className="k-edit-form">
+                    <div className="k-form-row">
+                      <label htmlFor="edit-number">Number</label>
+                      <input
+                        id="edit-number"
+                        className="k-input"
+                        type="number"
+                        value={editNumber}
+                        onChange={(e) => setEditNumber(e.target.value)}
+                      />
+                    </div>
 
-                    <label>
-                      Replace script{" "}
-                      <input type="file" onChange={(e) => setEditScriptFile(e.target.files?.[0] || null)} />
-                    </label>
+                    <div className="k-form-row">
+                      <label htmlFor="edit-title">Title</label>
+                      <input
+                        id="edit-title"
+                        className="k-input"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="k-form-row">
+                      <label htmlFor="edit-date">Date</label>
+                      <input
+                        id="edit-date"
+                        className="k-input"
+                        type="date"
+                        value={editDate}
+                        onChange={(e) => setEditDate(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="k-form-row">
+                      <label>Replace script</label>
+
+                      <div className="k-filepicker k-filepicker--inline">
+                        <label className="k-btn k-btn--subtle k-filepicker__btn">
+                          Choose file
+                          <input
+                            type="file"
+                            className="k-filepicker__input"
+                            onChange={(e) => setEditScriptFile(e.target.files?.[0] || null)}
+                          />
+                        </label>
+
+                        <span className="k-filepicker__name">
+                          {editScriptFile ? editScriptFile.name : "No file selected"}
+                        </span>
+                      </div>
+                    </div>
 
                     <button type="button" className="k-btn" onClick={saveEdit}>
                       Save

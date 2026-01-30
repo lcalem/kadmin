@@ -267,3 +267,54 @@
 .event-cover-edit:hover {
   background: rgba(255, 255, 255, 0.08);
 }
+
+
+/* Edit form inside event modal */
+.k-edit-form {
+  display: grid;
+  gap: 12px;
+  max-width: 560px;
+}
+
+/* Reuse same visual language as Participants */
+.k-edit-form .k-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.k-edit-form .k-form-row label {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.k-edit-form .k-input {
+  width: 100%;
+}
+
+
+/* Reusable input style (used in forms and inline table edit) */
+.k-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+.k-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.k-table .k-input {
+  font-size: 0.92rem;
+  padding: 6px 8px;
+  width: 200px;
+}

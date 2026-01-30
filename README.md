@@ -19,13 +19,6 @@ This project is a quick db-backend-frontend project for organizing maths confere
 - [x] Add / update / delete prospects
 - [x] Add photos to participants
 
-- [ ] Store original script filename instead of UUID
-- [ ] Drag & drop uploads
-- [ ] Photo at participant creation
-- [ ] Display full picture on click
-- [ ] Speaker table with all info
-- [ ] Separate Event page with details (speakers, participants, etc.)
-
 Frontend beautification:
 - [x] Select color background and font
 - [x] Make a start page where we can select one of the 4 pages
@@ -37,15 +30,15 @@ Frontend beautification:
 - [x] update picture to speakers
 - [x] seed with all the pictures.
 - [x] Uploaded pictures should maybe go in the data with a name that's parsable by the seed.py instead of a uuid so the data folder is movable as-is to a new server
-
 - [x] Make a prettier Events page where each event is a bubble with a picture
 - [x] On click, each event is a separate page with more information, prettier download buttons for the script files, upload button for the script file, edit button
-- [ ] Prettier edit form
+- [x] Prettier edit form
 - [x] Seeding of photos previously uploaded
-- [ ] "nuit du" instead of juste la date
+- [x] "nuit du" instead of juste la date
 - [ ] prettify Add Event in its own modal, that also creates a speaker, with a picture
 
 - [ ] Simple but themed prospects table where all the information is visible at once
+- [ ] Add prospect should have its own button + modal
 - [ ] sort speakers and participants by name, events by number
 
 ### Housekeeping & security
@@ -65,6 +58,8 @@ Frontend beautification:
 - [ ] In order to merge the two build photo index functions in seed.py, we should switch to all normalized names first-name_last-name for photos _on disk_ first by sweeping the photos-trombi at the beginning of seed.py. Then we can treat photo names as normalized correctly afterwards
 - [ ] static image background when I have it 
 - [ ] switch back speaker routes to speakers plural for consistency
+- [ ] display latex in story
+- [ ] display and download all script files
 
 ## Howto
 ### Local Testing from scratch
