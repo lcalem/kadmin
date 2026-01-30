@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./Participants.css";
 
 export default function Prospects() {
   const [items, setItems] = useState([]);
@@ -11,6 +12,8 @@ export default function Prospects() {
   const [newDomain, setNewDomain] = useState("");
   const [newSuggestedBy, setNewSuggestedBy] = useState("");
   const [newRemarks, setNewRemarks] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+
 
   // edit state (one row at a time)
   const [editingId, setEditingId] = useState(null);
@@ -68,6 +71,16 @@ export default function Prospects() {
     } catch (e) {
       setError(String(e));
     }
+  }
+
+  function closeAddModal() {
+    setShowAddModal(false);
+    setNewName("");
+    setNewApproached("");
+    setNewResponse("");
+    setNewDomain("");
+    setNewSuggestedBy("");
+    setNewRemarks("");
   }
 
   function startEdit(p) {
@@ -133,53 +146,115 @@ export default function Prospects() {
         <p style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{error}</p>
       )}
 
-      <h3>Add prospect</h3>
-      <form onSubmit={handleCreate} style={{ marginBottom: 16 }}>
-        <div>
-          <label>
-            Name{" "}
-            <input value={newName} onChange={(e) => setNewName(e.target.value)} required />
-          </label>
-        </div>
-        <div>
-          <label>
-            Approached{" "}
-            <input value={newApproached} onChange={(e) => setNewApproached(e.target.value)} />
-          </label>
-        </div>
-        <div>
-          <label>
-            Response{" "}
-            <input value={newResponse} onChange={(e) => setNewResponse(e.target.value)} />
-          </label>
-        </div>
-        <div>
-          <label>
-            Domain{" "}
-            <input value={newDomain} onChange={(e) => setNewDomain(e.target.value)} />
-          </label>
-        </div>
-        <div>
-          <label>
-            Suggested by{" "}
-            <input value={newSuggestedBy} onChange={(e) => setNewSuggestedBy(e.target.value)} />
-          </label>
-        </div>
-        <div>
-          <label>
-            Remarks{" "}
-            <input value={newRemarks} onChange={(e) => setNewRemarks(e.target.value)} />
-          </label>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+        <button
+          type="button"
+          className="k-btn k-btn--subtle"
+          onClick={() => setShowAddModal(true)}
+        >
+          + Add prospect
+        </button>
+      </div>
 
-        <button type="submit">Create</button>
-      </form>
+      {showAddModal && (
+        <div
+          className="k-modal-backdrop"
+          onClick={closeAddModal}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="k-modal k-modal--form" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="k-modal-close"
+              type="button"
+              onClick={closeAddModal}
+              aria-label="Close"
+            >
+              ×
+            </button>
 
-      <h3>List</h3>
-      <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+            <h3 style={{ marginTop: 0 }}>Add prospect</h3>
+
+            <form
+              onSubmit={async (e) => {
+                await handleCreate(e);
+                closeAddModal();
+              }}
+            >
+              <div className="k-edit-form">
+                <div className="k-form-row">
+                  <label htmlFor="p-name">Name</label>
+                  <input
+                    id="p-name"
+                    className="k-input"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="p-approached">Approached</label>
+                  <input
+                    id="p-approached"
+                    className="k-input"
+                    value={newApproached}
+                    onChange={(e) => setNewApproached(e.target.value)}
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="p-response">Response</label>
+                  <input
+                    id="p-response"
+                    className="k-input"
+                    value={newResponse}
+                    onChange={(e) => setNewResponse(e.target.value)}
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="p-domain">Domain</label>
+                  <input
+                    id="p-domain"
+                    className="k-input"
+                    value={newDomain}
+                    onChange={(e) => setNewDomain(e.target.value)}
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="p-suggested">Suggested by</label>
+                  <input
+                    id="p-suggested"
+                    className="k-input"
+                    value={newSuggestedBy}
+                    onChange={(e) => setNewSuggestedBy(e.target.value)}
+                  />
+                </div>
+
+                <div className="k-form-row">
+                  <label htmlFor="p-remarks">Remarks</label>
+                  <input
+                    id="p-remarks"
+                    className="k-input k-input-long"
+                    value={newRemarks}
+                    onChange={(e) => setNewRemarks(e.target.value)}
+                  />
+                </div>
+
+                <button type="submit" className="k-btn">
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <table className="k-table">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Name</th>
             <th>Approached</th>
             <th>Response</th>
@@ -195,11 +270,10 @@ export default function Prospects() {
 
             return (
               <tr key={p.id}>
-                <td>{p.id}</td>
 
                 <td>
                   {isEditing ? (
-                    <input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                    <input className="k-input" value={editName} onChange={(e) => setEditName(e.target.value)} />
                   ) : (
                     p.name
                   )}
@@ -207,7 +281,7 @@ export default function Prospects() {
 
                 <td>
                   {isEditing ? (
-                    <input value={editApproached} onChange={(e) => setEditApproached(e.target.value)} />
+                    <input className="k-input" value={editApproached} onChange={(e) => setEditApproached(e.target.value)} />
                   ) : (
                     p.approached ?? ""
                   )}
@@ -215,7 +289,7 @@ export default function Prospects() {
 
                 <td>
                   {isEditing ? (
-                    <input value={editResponse} onChange={(e) => setEditResponse(e.target.value)} />
+                    <input className="k-input" value={editResponse} onChange={(e) => setEditResponse(e.target.value)} />
                   ) : (
                     p.response ?? ""
                   )}
@@ -223,7 +297,7 @@ export default function Prospects() {
 
                 <td>
                   {isEditing ? (
-                    <input value={editDomain} onChange={(e) => setEditDomain(e.target.value)} />
+                    <input className="k-input" value={editDomain} onChange={(e) => setEditDomain(e.target.value)} />
                   ) : (
                     p.domain ?? ""
                   )}
@@ -231,7 +305,7 @@ export default function Prospects() {
 
                 <td>
                   {isEditing ? (
-                    <input value={editSuggestedBy} onChange={(e) => setEditSuggestedBy(e.target.value)} />
+                    <input className="k-input" value={editSuggestedBy} onChange={(e) => setEditSuggestedBy(e.target.value)} />
                   ) : (
                     p.suggested_by ?? ""
                   )}
@@ -239,7 +313,7 @@ export default function Prospects() {
 
                 <td>
                   {isEditing ? (
-                    <input value={editRemarks} onChange={(e) => setEditRemarks(e.target.value)} />
+                    <input className="k-input k-input-long" value={editRemarks} onChange={(e) => setEditRemarks(e.target.value)} />
                   ) : (
                     p.remarks ?? ""
                   )}
@@ -248,13 +322,13 @@ export default function Prospects() {
                 <td>
                   {isEditing ? (
                     <>
-                      <button onClick={() => saveEdit(p.id)}>Save</button>{" "}
-                      <button onClick={cancelEdit}>Cancel</button>
+                      <button className="k-btn" onClick={() => saveEdit(p.id)}>Save</button>{" "}
+                      <button className="k-btn k-btn--subtle" onClick={cancelEdit}>Cancel</button>
                     </>
                   ) : (
                     <>
-                      <button onClick={() => startEdit(p)}>Edit</button>{" "}
-                      <button onClick={() => handleDelete(p.id)}>Delete</button>
+                      <button className="k-btn" onClick={() => startEdit(p)}>Edit</button>{" "}
+                      <button className="k-btn k-btn--subtle" onClick={() => handleDelete(p.id)}>Delete</button>
                     </>
                   )}
                 </td>

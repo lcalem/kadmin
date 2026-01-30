@@ -38,8 +38,8 @@ Frontend beautification:
 - [x] prettify Add Event in its own modal, that also creates a speaker, with a picture
 - [x] Display events for participants, display participants for event
 - [ ] Add participants UX during event creation
-- [ ] Simple but themed prospects table where all the information is visible at once
-- [ ] Add prospect should have its own button + modal
+- [x] Simple but themed prospects table where all the information is visible at once
+- [x] Add prospect should have its own button + modal
 - [ ] sort speakers and participants by name, (done) events by number
 
 ### Housekeeping & security
@@ -63,6 +63,7 @@ Frontend beautification:
 - [ ] display and download all script files
 - [ ] add possibility of creating a new event by uploading a standardized .zip with all the info following a documented format, to avoid having to spend time clicking on the interface
 - [ ] downloadable story and notes in markdown for easier editing later
+- [ ] common table design between Participants and Prospects table in a separate file
 
 ## Howto
 ### Local Testing from scratch
