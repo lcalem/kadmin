@@ -3,7 +3,7 @@ import "./Speakers.css";
 
 function speakerPictureUrl(s) {
   if (!s.picture_file) return null;
-  return `/api/speaker/${s.id}/picture?v=${encodeURIComponent(s.picture_file)}`;
+  return `/api/speakers/${s.id}/picture?v=${encodeURIComponent(s.picture_file)}`;
 }
 
 export default function Speakers() {
@@ -39,7 +39,7 @@ export default function Speakers() {
     const fd = new FormData();
     fd.append("file", photoFile);
 
-    const res = await fetch(`/api/speaker/${selected.id}/picture`, {
+    const res = await fetch(`/api/speakers/${selected.id}/picture`, {
       method: "POST",
       body: fd,
     });

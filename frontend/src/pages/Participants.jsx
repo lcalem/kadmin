@@ -301,6 +301,7 @@ export default function Participants() {
               <th className="col-name">Name</th>
               <th>Pseudo</th>
               <th>Note</th>
+              <th>Descentes</th>
               <th>+1</th>
               <th>Actions</th>
             </tr>
@@ -392,6 +393,10 @@ export default function Participants() {
                     ) : (
                       p.note ?? ""
                     )}
+                  </td>
+
+                  <td>
+                    {p.event_numbers?.map(n => `${n}`).join(", ")}
                   </td>
 
                   <td style={{ textAlign: "center" }}>

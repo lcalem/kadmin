@@ -52,6 +52,7 @@ export default function Events() {
 
   // modal + edit state
   const [selected, setSelected] = useState(null); // selected event object
+  const [selectedDetail, setSelectedDetail] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editNumber, setEditNumber] = useState("");
   const [editTitle, setEditTitle] = useState("");
@@ -180,6 +181,13 @@ export default function Events() {
     setEditScriptFile(null);
     setIsEditingCover(false);
     setCoverFile(null);
+    setSelectedDetail(null);
+
+    fetch(`/api/events/${ev.id}`)
+      .then((r) => r.ok ? r.json() : r.text().then((t) => Promise.reject(t)))
+      .then(setSelectedDetail)
+      .catch((e) => setError(String(e)));
+      
   }
 
   async function saveEdit() {
@@ -239,6 +247,8 @@ export default function Events() {
         </button>
       </div>
 
+      {// ADD MODAL
+      }
       {showAddModal && (
         <div
           className="event-modal-backdrop"
@@ -429,6 +439,9 @@ export default function Events() {
         </div>
       )}
 
+      {
+        // EVENT GRID
+      }
       <div className="event-grid">
         {items.map((ev) => (
           <button key={ev.id} className="event-bubble" type="button" onClick={() => openModal(ev)}>
@@ -446,6 +459,9 @@ export default function Events() {
         ))}
       </div>
 
+      {
+        // EVENT MODAL
+      }
       {selected && (
         <div className="event-modal-backdrop" onClick={() => setSelected(null)} role="dialog" aria-modal="true">
           <div className="event-modal" onClick={(e) => e.stopPropagation()}>
@@ -458,6 +474,31 @@ export default function Events() {
                 #{selected.number} — {selected.title}
               </h3>
               <div className="event-modal-subtitle">{formatNight(selected.date)}</div>
+              {selectedDetail?.speaker?.length ? (
+                <div className="event-speaker">
+                  {selectedDetail.speaker[0].picture_file ? (
+                    <img
+                      className="event-speaker-avatar"
+                      src={`/api/speakers/${selectedDetail.speaker[0].id}/picture?v=${encodeURIComponent(
+                        selectedDetail.speaker[0].picture_file
+                      )}`}
+                      alt={selectedDetail.speaker[0].name || "Speaker"}
+                    />
+                  ) : (
+                    <div className="event-speaker-avatar event-speaker-avatar--placeholder" />
+                  )}
+
+                  <div className="event-speaker-text">
+                    <div className="event-speaker-name">{selectedDetail.speaker[0].name}</div>
+                    <div className="event-speaker-meta">
+                      {selectedDetail.speaker[0].ktaname ? `@${selectedDetail.speaker[0].ktaname}` : ""}
+                      {selectedDetail.speaker[0].labo ? ` — ${selectedDetail.speaker[0].labo}` : ""}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="event-speaker-muted">Speaker unknown</div>
+              )}
               <div className="event-modal-cover">
                 {eventCoverUrl(selected) ? (
                   <img src={eventCoverUrl(selected)} alt={selected.title || `Event ${selected.number}`} />
@@ -536,6 +577,35 @@ export default function Events() {
                     {selected.notes}
                   </div>
                 </div>
+              )}
+
+              <h4 style={{ marginBottom: 8 }}>Participants</h4>
+
+              {!selectedDetail ? (
+                <div style={{ color: "var(--muted)", fontFamily: "var(--font-sans)" }}>Loading…</div>
+              ) : selectedDetail.participants?.length ? (
+                <div className="event-participants">
+                  {selectedDetail.participants.map((p) => (
+                    <div key={p.id} className="event-participant">
+                      {p.picture_file ? (
+                        <img
+                          className="event-participant-avatar"
+                          src={`/api/participants/${p.id}/picture?v=${encodeURIComponent(p.picture_file)}`}
+                          alt={p.name || "Participant"}
+                        />
+                      ) : (
+                        <div className="event-participant-avatar event-participant-avatar--placeholder" />
+                      )}
+
+                      <div className="event-participant-text">
+                        <div className="event-participant-name">{p.name}</div>
+                        {p.ktaname && <div className="event-participant-pseudo">{p.ktaname}</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ color: "var(--muted)", fontFamily: "var(--font-sans)" }}>No participants.</div>
               )}
 
               <div className="event-actions">

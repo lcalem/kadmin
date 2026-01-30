@@ -36,10 +36,27 @@ class ParticipantBase(BaseModel):
     note: Optional[str] = None
     is_plusone: Optional[bool] = None
     picture_file: Optional[str] = None
+    event_numbers: list[int] = []
 
     model_config = ConfigDict(from_attributes=True)
 
 
+class ParticipantMini(BaseModel):
+    id: int
+    name: Optional[str] = None
+    ktaname: Optional[str] = None
+    picture_file: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class EventDetail(EventBase):
+    participants: List[ParticipantMini] = []
+    speaker: List[SpeakerBase] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+   
 class ParticipantCreate(BaseModel):
     name: str
     ktaname: Optional[str] = None

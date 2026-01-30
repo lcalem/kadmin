@@ -13,7 +13,7 @@ from typing import List
 
 from db import SessionLocal
 from models import Event, Speaker, Participant, Prospect
-from schemas import EventBase, SpeakerBase, ParticipantBase, ParticipantCreate, ParticipantUpdate, ProspectBase, ProspectCreate, ProspectUpdate
+from schemas import EventBase, EventDetail, SpeakerBase, ParticipantBase, ParticipantCreate, ParticipantUpdate, ProspectBase, ProspectCreate, ProspectUpdate
 
 from utils import normalize_name
 
@@ -69,6 +69,14 @@ def read_root():
 @app.get("/api/events", response_model=List[EventBase])
 def get_events(db: Session = Depends(get_db)):
     return db.query(Event).order_by(Event.number.asc()).all()
+
+
+@app.get("/api/events/{event_id}", response_model=EventDetail)
+def get_event_detail(event_id: int, db: Session = Depends(get_db)):
+    ev = db.query(Event).filter(Event.id == event_id).first()
+    if not ev:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return ev
 
 
 @app.post("/api/events", response_model=EventBase)
@@ -350,7 +358,7 @@ def get_speakers(db: Session = Depends(get_db)):
     return out
 
 
-@app.get("/api/speaker/{speaker_id}/picture")
+@app.get("/api/speakers/{speaker_id}/picture")
 def get_speaker_picture(speaker_id: int, db: Session = Depends(get_db)):
     s = db.query(Speaker).filter(Speaker.id == speaker_id).first()
     if not s:
@@ -366,7 +374,7 @@ def get_speaker_picture(speaker_id: int, db: Session = Depends(get_db)):
     return FileResponse(path=str(path))
 
 
-@app.post("/api/speaker/{speaker_id}/picture", response_model=SpeakerBase)
+@app.post("/api/speakers/{speaker_id}/picture", response_model=SpeakerBase)
 async def upload_speaker_picture(
     speaker_id: int,
     file: UploadFile = File(...),
@@ -412,9 +420,31 @@ async def upload_speaker_picture(
 
 
 # ------- PARTICIPANTS ROUTES -------
-@app.get("/api/participants", response_model=List[ParticipantBase])
+@app.get("/api/participants", response_model=list[ParticipantBase])
 def get_participants(db: Session = Depends(get_db)):
-    return db.query(Participant).all()
+    participants = db.query(Participant).all()
+
+    out = []
+    for p in participants:
+        events = (
+            db.query(Event)
+              .filter(Event.participants.any(Participant.id == p.id))
+              .all()
+        )
+        event_numbers = sorted([e.number for e in events if e.number is not None])
+
+        out.append({
+            "id": p.id,
+            "name": p.name,
+            "normalized_name": p.normalized_name,
+            "ktaname": p.ktaname,
+            "note": p.note,
+            "is_plusone": p.is_plusone,
+            "picture_file": p.picture_file,
+            "event_numbers": event_numbers,
+        })
+
+    return out
 
 
 @app.get("/api/participants/{participant_id}/picture")

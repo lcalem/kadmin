@@ -36,7 +36,7 @@ Frontend beautification:
 - [x] Seeding of photos previously uploaded
 - [x] "nuit du" instead of juste la date
 - [x] prettify Add Event in its own modal, that also creates a speaker, with a picture
-- [ ] Display events for participants, display participants for event
+- [x] Display events for participants, display participants for event
 - [ ] Add participants UX during event creation
 - [ ] Simple but themed prospects table where all the information is visible at once
 - [ ] Add prospect should have its own button + modal
