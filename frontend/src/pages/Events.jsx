@@ -1,29 +1,37 @@
 import { useEffect, useState } from "react";
+import "./Events.css";
+
+function eventCoverUrl(ev) {
+  if (!ev?.cover_photo) return null;
+  return `/api/events/${ev.id}/cover?v=${encodeURIComponent(ev.cover_photo)}`;
+}
 
 export default function Events() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
 
-  // create form state
+  // create form state (kept as-is for now)
   const [number, setNumber] = useState("");
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [scriptFile, setScriptFile] = useState(null);
 
-  // edit state (one row at a time)
-  const [editingId, setEditingId] = useState(null);
+  // modal + edit state
+  const [selected, setSelected] = useState(null); // selected event object
+  const [isEditing, setIsEditing] = useState(false);
   const [editNumber, setEditNumber] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editDate, setEditDate] = useState("");
   const [editScriptFile, setEditScriptFile] = useState(null);
+  const [isEditingCover, setIsEditingCover] = useState(false);
+  const [coverFile, setCoverFile] = useState(null);
 
   async function loadEvents() {
     try {
       setError("");
       const res = await fetch("/api/events");
       if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      setItems(data);
+      setItems(await res.json());
     } catch (e) {
       setError(String(e));
     }
@@ -32,6 +40,42 @@ export default function Events() {
   useEffect(() => {
     loadEvents();
   }, []);
+
+  // close modal on Escape
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "Escape") {
+        setSelected(null);
+        setIsEditing(false);
+        setEditScriptFile(null);
+        setIsEditingCover(false);
+        setCoverFile(null);
+      }
+    }
+    if (selected) window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selected]);
+
+  async function uploadCover() {
+    if (!selected || !coverFile) return;
+
+    const fd = new FormData();
+    fd.append("file", coverFile);
+
+    const res = await fetch(`/api/events/${selected.id}/cover`, {
+      method: "POST",
+      body: fd,
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    const updated = await res.json();
+
+    setItems((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+    setSelected(updated);
+
+    setCoverFile(null);
+    setIsEditingCover(false);
+  }
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -61,22 +105,19 @@ export default function Events() {
     }
   }
 
-  function startEdit(ev) {
-    setEditingId(ev.id);
+  function openModal(ev) {
+    setSelected(ev);
+    setIsEditing(false);
     setEditNumber(String(ev.number ?? ""));
     setEditTitle(ev.title ?? "");
-    setEditDate(ev.date ?? ""); // should already be YYYY-MM-DD
+    setEditDate(ev.date ?? "");
     setEditScriptFile(null);
-    const inp = document.getElementById("edit-script-input");
-    if (inp) inp.value = "";
+    setIsEditingCover(false);
+    setCoverFile(null);
   }
 
-  function cancelEdit() {
-    setEditingId(null);
-    setEditScriptFile(null);
-  }
-
-  async function saveEdit(id) {
+  async function saveEdit() {
+    if (!selected) return;
     try {
       setError("");
 
@@ -86,38 +127,45 @@ export default function Events() {
       fd.append("date", editDate);
       if (editScriptFile) fd.append("script", editScriptFile);
 
-      const res = await fetch(`/api/events/${id}`, { method: "PUT", body: fd });
+      const res = await fetch(`/api/events/${selected.id}`, { method: "PUT", body: fd });
       if (!res.ok) throw new Error(await res.text());
       const updated = await res.json();
 
-      setItems((prev) => prev.map((e) => (e.id === id ? updated : e)));
-      setEditingId(null);
+      setItems((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+      setSelected(updated);
+      setIsEditing(false);
       setEditScriptFile(null);
+      setIsEditingCover(false);
+      setCoverFile(null);
     } catch (e) {
       setError(String(e));
     }
   }
 
-  async function handleDelete(id) {
+  async function handleDeleteSelected() {
+    if (!selected) return;
     if (!window.confirm("Delete this event? (This will also remove its script file)")) return;
+
     try {
       setError("");
-      const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/events/${selected.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(await res.text());
-      setItems((prev) => prev.filter((e) => e.id !== id));
-      if (editingId === id) cancelEdit();
+
+      setItems((prev) => prev.filter((e) => e.id !== selected.id));
+      setSelected(null);
+      setIsEditing(false);
+      setEditScriptFile(null);
+      setIsEditingCover(false);
+      setCoverFile(null);
     } catch (e) {
       setError(String(e));
     }
   }
 
   return (
-    <div style={{ padding: 16 }}>
+    <div className="events-page">
       <h2>Events</h2>
-
-      {error && (
-        <p style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{error}</p>
-      )}
+      {error && <p style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{error}</p>}
 
       <h3>Add event</h3>
       <form onSubmit={handleCreate} style={{ marginBottom: 20 }}>
@@ -136,23 +184,14 @@ export default function Events() {
         <div>
           <label>
             Title{" "}
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
+            <input value={title} onChange={(e) => setTitle(e.target.value)} required />
           </label>
         </div>
 
         <div>
           <label>
             Date{" "}
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
           </label>
         </div>
 
@@ -170,106 +209,178 @@ export default function Events() {
         <button type="submit">Create</button>
       </form>
 
-      <h3>List</h3>
-      <table border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Date</th>
-            <th>Script</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((e) => {
-            const isEditing = editingId === e.id;
+      <h3>Browse</h3>
+      <div className="event-grid">
+        {items.map((ev) => (
+          <button key={ev.id} className="event-bubble" type="button" onClick={() => openModal(ev)}>
+            <div className="event-avatar">
+              {eventCoverUrl(ev) ? (
+                <img src={eventCoverUrl(ev)} alt={ev.title || `Event ${ev.number}`} />
+              ) : (
+                <div className="event-avatar--placeholder">#{ev.number}</div>
+              )}
+            </div>
+            <div className="event-title">
+              <span className="event-title-text">{ev.title}</span>
+            </div>
+          </button>
+        ))}
+      </div>
 
-            return (
-              <tr key={e.id}>
-                <td>
-                  {isEditing ? (
-                    <input
-                      type="number"
-                      value={editNumber}
-                      onChange={(ev) => setEditNumber(ev.target.value)}
-                      style={{ width: 90 }}
-                    />
-                  ) : (
-                    e.number
-                  )}
-                </td>
+      {selected && (
+        <div className="event-modal-backdrop" onClick={() => setSelected(null)} role="dialog" aria-modal="true">
+          <div className="event-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="event-modal-close" type="button" onClick={() => setSelected(null)} aria-label="Close">
+              ×
+            </button>
 
-                <td>
-                  {isEditing ? (
-                    <input
-                      value={editTitle}
-                      onChange={(ev) => setEditTitle(ev.target.value)}
-                    />
-                  ) : (
-                    e.title
-                  )}
-                </td>
+            <div className="event-modal-body">
+              <h3 className="event-modal-title">
+                #{selected.number} — {selected.title}
+              </h3>
+              <div className="event-modal-subtitle">{selected.date}</div>
 
-                <td>
-                  {isEditing ? (
-                    <input
-                      type="date"
-                      value={editDate}
-                      onChange={(ev) => setEditDate(ev.target.value)}
-                    />
-                  ) : (
-                    e.date
-                  )}
-                </td>
+              <div className="event-modal-cover">
+                {eventCoverUrl(selected) ? (
+                  <img src={eventCoverUrl(selected)} alt={selected.title || `Event ${selected.number}`} />
+                ) : (
+                  <div className="event-modal-cover--placeholder">#{selected.number}</div>
+                )}
+                <button
+                  className="event-cover-edit"
+                  type="button"
+                  onClick={() => {
+                    setIsEditingCover((v) => {
+                      const next = !v;
+                      if (next) {
+                        setIsEditing(false);
+                        setEditScriptFile(null);
+                      } else {
+                        setCoverFile(null);
+                      }
+                      return next;
+                    });
+                  }}
+                  aria-label="Change cover image"
+                  title="Change cover image"
+                >
+                  ✏️
+                </button>
+              </div>
 
-                <td>
-                  {e.script_files && e.script_files.length > 0 ? (
-                    <a
-                      href={`/api/events/${e.id}/script`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Download
-                    </a>
-                  ) : (
-                    "—"
-                  )}
-
-                  {isEditing && (
-                    <div style={{ marginTop: 6 }}>
+              {isEditingCover && (
+                <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                  <div className="k-filepicker k-filepicker--inline">
+                    <label className="k-btn k-btn--subtle k-filepicker__btn">
+                      Choose file
                       <input
-                        id="edit-script-input"
                         type="file"
-                        onChange={(ev) =>
-                          setEditScriptFile(ev.target.files?.[0] || null)
-                        }
+                        accept="image/*"
+                        className="k-filepicker__input"
+                        onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
                       />
-                      <div style={{ fontSize: 12 }}>
-                        (Pick a file to replace the script)
-                      </div>
-                    </div>
-                  )}
-                </td>
+                    </label>
 
-                <td>
-                  {isEditing ? (
-                    <>
-                      <button onClick={() => saveEdit(e.id)}>Save</button>{" "}
-                      <button onClick={cancelEdit}>Cancel</button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => startEdit(e)}>Edit</button>{" "}
-                      <button onClick={() => handleDelete(e.id)}>Delete</button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                    <span className="k-filepicker__name">
+                      {coverFile ? coverFile.name : "Choose a cover image…"}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="k-btn k-btn--subtle"
+                    disabled={!coverFile}
+                    onClick={() => {
+                      uploadCover().catch((e) => {
+                        console.error(e);
+                        setError(String(e));
+                      });
+                    }}
+                  >
+                    Upload cover
+                  </button>
+                </div>
+              )}
+
+              {selected.story && (
+                <div>
+                  <h4 style={{ marginBottom: 6 }}>Story</h4>
+                  <div style={{ color: "var(--text)", opacity: 0.95, whiteSpace: "pre-wrap" }}>
+                    {selected.story}
+                  </div>
+                </div>
+              )}
+
+              {selected.notes && (
+                <div>
+                  <h4 style={{ marginBottom: 6 }}>Notes</h4>
+                  <div style={{ color: "var(--text)", opacity: 0.95, whiteSpace: "pre-wrap" }}>
+                    {selected.notes}
+                  </div>
+                </div>
+              )}
+
+              <div className="event-actions">
+                {selected.script_files && selected.script_files.length > 0 ? (
+                  <a className="k-btn k-btn--subtle" href={`/api/events/${selected.id}/script`} target="_blank" rel="noopener noreferrer">
+                    Download script
+                  </a>
+                ) : (
+                  <span style={{ color: "var(--muted)", fontFamily: "var(--font-sans)" }}>No script</span>
+                )}
+
+                <button type="button" className="k-btn k-btn--subtle" onClick={() => {
+                    setIsEditing((v) => {
+                      const next = !v;
+                      if (next) {
+                        setIsEditingCover(false);
+                        setCoverFile(null);
+                      }
+                      return next;
+                    });
+                  }}>
+                  {isEditing ? "Close edit" : "Edit"}
+                </button>
+
+                <button type="button" className="k-btn k-btn--subtle" onClick={handleDeleteSelected}>
+                  Delete
+                </button>
+              </div>
+
+              {isEditing && (
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 14 }}>
+                  <h4 style={{ marginTop: 0 }}>Edit event</h4>
+
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <label>
+                      Number{" "}
+                      <input type="number" value={editNumber} onChange={(e) => setEditNumber(e.target.value)} />
+                    </label>
+                    <label>
+                      Title{" "}
+                      <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                    </label>
+                    <label>
+                      Date{" "}
+                      <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} />
+                    </label>
+
+                    <label>
+                      Replace script{" "}
+                      <input type="file" onChange={(e) => setEditScriptFile(e.target.files?.[0] || null)} />
+                    </label>
+
+                    <button type="button" className="k-btn" onClick={saveEdit}>
+                      Save
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

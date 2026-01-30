@@ -26,6 +26,8 @@ PHOTO_DIR = Path("data") / "photos-trombi"
 PHOTO_DIR.mkdir(parents=True, exist_ok=True)
 SPEAKER_PHOTO_DIR = Path("data") / "photos-speakers"
 SPEAKER_PHOTO_DIR.mkdir(exist_ok=True)
+EVENT_PHOTO_DIR = Path("data") / "photos-events"
+EVENT_PHOTO_DIR.mkdir(exist_ok=True)
 ALLOWED_PHOTO_EXTS = {".jpg", ".jpeg", ".png"}
 
 # vite
@@ -61,7 +63,7 @@ def read_root():
 # ------- EVENT ROUTES -------
 @app.get("/api/events", response_model=List[EventBase])
 def get_events(db: Session = Depends(get_db)):
-    return db.query(Event).all()
+    return db.query(Event).order_by(Event.number.asc()).all()
 
 
 @app.post("/api/events", response_model=EventBase)
@@ -189,9 +191,74 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
         if path.exists():
             path.unlink()
 
+    if ev.cover_photo:
+        path = EVENT_PHOTO_DIR / ev.cover_photo
+        if path.exists():
+            path.unlink()
+
     db.delete(ev)
     db.commit()
     return {"ok": True}
+
+
+@app.get("/api/events/{event_id}/cover")
+def get_event_cover(event_id: int, db: Session = Depends(get_db)):
+    ev = db.query(Event).filter(Event.id == event_id).first()
+    if not ev:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if not ev.cover_photo:
+        raise HTTPException(status_code=404, detail="No cover for event")
+
+    path = EVENT_PHOTO_DIR / ev.cover_photo
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Cover file missing on disk")
+
+    return FileResponse(path=str(path))
+
+
+@app.post("/api/events/{event_id}/cover", response_model=EventBase)
+async def upload_event_cover(
+    event_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    ev = db.query(Event).filter(Event.id == event_id).first()
+    if not ev:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    if ev.number is None:
+        raise HTTPException(status_code=400, detail="Event has no number")
+
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_PHOTO_EXTS:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    # ensure event folder exists
+    event_folder = EVENT_PHOTO_DIR / str(ev.number)
+    event_folder.mkdir(parents=True, exist_ok=True)
+
+    # delete old cover file if present
+    if ev.cover_photo:
+        old_path = EVENT_PHOTO_DIR / ev.cover_photo
+        if old_path.exists():
+            old_path.unlink()
+
+    # store new file
+    filename = f"{ev.number}_title{ext}"
+    rel_path = Path(str(ev.number)) / filename   # stored in DB
+    abs_path = EVENT_PHOTO_DIR / rel_path
+
+    with abs_path.open("wb") as f:
+        while chunk := await file.read(1024 * 1024):
+            f.write(chunk)
+
+    # update DB
+    ev.cover_photo = str(rel_path)
+    db.commit()
+    db.refresh(ev)
+
+    return ev
 
 
 # ------- SPEAKERS ROUTES -------
@@ -277,12 +344,12 @@ async def upload_speaker_picture(
     event_numbers = sorted([e.number for e in events if e.number is not None])
 
     return {
-    "id": s.id,
-    "name": s.name,
-    "ktaname": s.ktaname,
-    "labo": s.labo,
-    "picture_file": s.picture_file,
-    "event_numbers": event_numbers,
+        "id": s.id,
+        "name": s.name,
+        "ktaname": s.ktaname,
+        "labo": s.labo,
+        "picture_file": s.picture_file,
+        "event_numbers": event_numbers,
     }
 
 

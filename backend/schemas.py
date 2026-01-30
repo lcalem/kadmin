@@ -10,6 +10,7 @@ class EventBase(BaseModel):
     date: datetime.date
     story: Optional[str]
     notes: Optional[str]
+    cover_photo: Optional[str] = None
     script_files: Optional[List[str]]
 
     model_config = ConfigDict(from_attributes=True)

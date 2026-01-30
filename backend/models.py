@@ -37,6 +37,7 @@ class Event(Base):
     date = Column(Date)
     story = Column(Text)
     notes = Column(Text)
+    cover_photo = Column(String)
     script_files = Column(ARRAY(String))
     speaker = relationship("Speaker", secondary=event_speaker)
     participants = relationship("Participant", secondary=event_participant)

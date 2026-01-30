@@ -14,9 +14,30 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 EVENTS_DIR = DATA_DIR / "descentes"
 PARTICIPANTS_CSV = DATA_DIR / "participants-participantes.csv"
+PROSPECTS_CSV = DATA_DIR / "orateurs-oratrices-potentiels.csv"
+
 PHOTO_DIR = DATA_DIR / "photos-trombi"
 SPEAKER_PHOTO_DIR = DATA_DIR / "photos-speakers"
-PROSPECTS_CSV = DATA_DIR / "orateurs-oratrices-potentiels.csv"
+EVENT_PHOTO_DIR = DATA_DIR / "photos-events"
+ALLOWED_PHOTO_EXTS = {".jpg", ".jpeg", ".png"}
+
+
+def find_event_cover_relpath(event_number: str) -> str | None:
+    """
+    Returns relative path like: "12/12_title.jpg" if found, else None.
+    """
+    if not event_number:
+        return None
+
+    folder = EVENT_PHOTO_DIR / str(event_number)
+    if not folder.exists():
+        return None
+
+    for ext in ALLOWED_PHOTO_EXTS:
+        candidate = folder / f"{event_number}_title{ext}"
+        if candidate.exists():
+            return f"{event_number}/{event_number}_title{ext}"
+    return None
 
 
 # Part 1 : read base data to create events first, gather speaker data
@@ -86,13 +107,17 @@ def create_speakers_and_events(db):
                     db.add(speaker)
                     db.commit()
 
+                    event_number = info["number"]
+                    cover_photo = find_event_cover_relpath(event_number)
+
                     # create event with speaker
                     event = Event(
-                        number=info['number'],
+                        number=int(info['number']),
                         title=info['Titre'],
                         date=datetime.date(y, m, d),
                         story=info['story'],
                         notes=info['notes'],
+                        cover_photo=cover_photo,
                         script_files=info['script'],
                         speaker=[speaker]
                     )
@@ -160,7 +185,7 @@ def create_participants(db):
                                           ktaname=pseudo,
                                           note=note,
                                           is_plusone=plusone,
-                                          picture_file=str(picture_filepath))
+                                          picture_file=(picture_filepath.name if picture_filepath else None))
                 db.add(participant)
                 db.flush()
 

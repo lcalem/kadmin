@@ -1,0 +1,269 @@
+.events-page {
+  padding: 16px;
+}
+
+/* Grid of event bubbles */
+.event-grid {
+  margin: 28px auto 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 36px 28px;
+  max-width: 1100px;
+}
+
+.event-bubble {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: center;
+  padding: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 14px; 
+}
+
+.event-avatar {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  place-items: center;
+}
+
+/* Placeholder (until you have images) */
+.event-avatar--placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-sans);
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+/*
+.event-title {
+  margin-top: 14px;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: inline-block;
+  position: relative;
+  padding-bottom: 4px;
+  transition: color 0.35s ease;
+  line-height: 1.25;
+  max-width: 30ch;
+  text-align: center;
+  min-height: calc(1.25em * 3); 
+}
+  */
+
+
+/* underline animation */
+/*
+.event-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+
+.event-bubble:hover .event-title,
+.event-bubble:focus-visible .event-title {
+  color: var(--text);
+}
+
+.event-bubble:hover .event-title::after,
+.event-bubble:focus-visible .event-title::after {
+  transform: scaleX(1);
+}
+
+.event-bubble:hover .event-avatar,
+.event-bubble:focus-visible .event-avatar {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+  */
+
+.event-title {
+    min-height: calc(1.25em * 4);
+    max-width: 35ch;
+    text-align: center;
+    line-height: 1.25;
+}
+
+/* Text wrapper */
+.event-title-text {
+    margin-top: 14px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    position: relative;
+    display: inline-block;
+}
+
+/* Underline */
+.event-title-text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px; /* distance from text */
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* Hover trigger (from bubble) */
+.event-bubble:hover .event-title-text::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* Modal (same spirit as speakers/participants) */
+.event-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: flex-start;   /* top */
+  justify-content: center;
+  padding: 24px;
+  overflow: auto;
+  z-index: 9999;
+}
+
+.event-modal {
+  position: relative;
+  width: min(900px, 94vw);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(10, 10, 10, 0.92);
+  overflow: hidden;
+}
+
+.event-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.event-modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.event-modal-body {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.event-modal-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+}
+
+.event-modal-subtitle {
+  color: var(--muted);
+  font-family: var(--font-sans);
+}
+
+.event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.event-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.75) contrast(1.0);
+  transition: filter 0.35s ease;
+}
+
+.event-bubble:hover .event-avatar img,
+.event-bubble:focus-visible .event-avatar img {
+  filter: brightness(0.95) contrast(1.05);
+}
+
+/* Modal cover */
+.event-modal-cover {
+  width: 100%;
+  max-height: 320px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.event-modal-cover img {
+  width: 100%;
+  height: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.event-modal-cover--placeholder {
+  height: 220px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-sans);
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.event-modal-cover {
+  position: relative;
+}
+
+.event-cover-edit {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.event-cover-edit:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
