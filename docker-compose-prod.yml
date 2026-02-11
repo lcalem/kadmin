@@ -1,43 +1,40 @@
 services:
   db:
     image: postgres:15
-    security_opt:
-      - seccomp=unconfined
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
-
+    restart: unless-stopped
+        
   backend:
     build:
       context: ./backend
-    security_opt:
-      - seccomp=unconfined
     volumes:
-      - ./backend:/app
       - uploads:/app/uploads
     environment:
       - DATABASE_URL=${DATABASE_URL}
     depends_on:
       - db
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     networks:
       - default
       - proxy
     command: uvicorn routes:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
 
   frontend:
     build:
       context: ./frontend
-    command: sh -c "npm install && npm run build && npx serve -s dist -l 5173"
     environment:
             - VITE_API_URL=${VITE_API_URL}
     networks:
       - default
       - proxy
+    restart: unless-stopped
 
 volumes:
   db_data:
