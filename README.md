@@ -44,13 +44,13 @@ Frontend beautification:
 
 ### Housekeeping & security
 
-- [ ] Add authentication
+- [x] Add authentication
 - [ ] Remove hardcoded DB URL
 - [x] Clean repo (venv, node_modules)
 - [ ] Manage passwords/users via env vars (not docker-compose)
 - [x] Input files (participants, photos, etc.) not in repo; uploaded once at server setup
 
-- [ ] Server setup
+- [x] Server setup
 
 ### Low prio
 - [ ] The sorting of speakers by last name with a single name field is good for now but brittle: split speaker name into first_name and last_name would be better
@@ -91,7 +91,12 @@ data/
 └── participants-participantes.csv
 ```
 
-1. Build containers : `docker compose up --build`
+## How to run
+Depending on whether you want to run it in dev mode locally or in prod mode with a proxy managing routing, use either:
+- docker-compose-dev.yml
+- docker-compose-prod.yml
+
+1. Build containers : `docker compose -f docker-compose-[ENV].yml up -d --build`
 2. Reset database if needed : `docker compose exec backend python reset_db.py`
 3. Seed database : `docker compose exec backend python seed.py`
 4. Go to `localhost:8000/api/hello` and/or `localhost:8000/api/db-check` to test the API 

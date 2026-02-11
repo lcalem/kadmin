@@ -28,6 +28,9 @@ services:
       - db
     ports:
       - "8000:8000"
+    networks:
+      - default
+      - proxy
     command: uvicorn routes:app --host 0.0.0.0 --port 8000
 
   frontend:
@@ -41,7 +44,14 @@ services:
     command: npm run dev -- --host 0.0.0.0 --port 5173
     environment:
       - VITE_API_URL=http://localhost:8000
+    networks:
+      - default
+      - proxy
 
 volumes:
   db_data:
   uploads:
+
+networks:
+  proxy:
+    external: true
